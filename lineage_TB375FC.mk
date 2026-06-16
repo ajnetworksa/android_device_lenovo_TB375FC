@@ -53,5 +53,3 @@ PRODUCT_VENDOR_PROPERTIES += \
     ro.vendor.config.lgsi.ota.model=TB375FC_PRC
 PRODUCT_MANUFACTURER := Lenovo
 PRODUCT_CHARACTERISTICS := tablet
-
-PRODUCT_GMS_CLIENTID_BASE := android-lenovo-rev2

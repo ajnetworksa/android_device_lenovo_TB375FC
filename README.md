@@ -7,7 +7,7 @@ LineageOS 23.2 (Android 16) device tree for the Lenovo Xiaoxin Pad Pro 12.7 (202
 | Component | Detail |
 |-----------|--------|
 | SoC | MediaTek Dimensity 8300 (MT6897) |
-| GPU | Mali-G615 MC10 |
+| GPU | Immortalis-G615 MC6 |
 | RAM / Storage | 8 GB / 128 GB, 8 GB / 256 GB, or 12 GB / 256 GB (UFS 4.0) |
 | Display | 12.7" 3K (2944 x 1840) IPS LCD, 144 Hz (toggable, see Technical Notes) |
 | Battery | ~10200 mAh |
@@ -64,7 +64,33 @@ We have pre-configured a set of highly optimized, open-source system application
 *   **Brave Browser**: A privacy-focused browser with built-in ad-blocking.
 *   *Pre-granted Permissions*: FINE_LOCATION, FILE_ACCESS, and NOTIFICATIONS are pre-granted at boot for these apps via `configs/default-permissions-prebuilts.xml`.
 
+### 5. On-Device AI & ML Intelligence
+All AI features run **entirely on-device** using the MediaTek APU (NNAPI) — zero cloud dependency, zero latency, full privacy:
+*   **Smart Text Selection**: Tap a word → ML auto-expands selection to the full address, phone number, email, URL, or flight number. Action chips ("Call", "Map", "Email") appear contextually.
+*   **Smart Linkify**: Automatic entity detection and one-tap actions for addresses, tracking numbers, and codes in any app's text views.
+*   **Notification Smart Replies**: AI-suggested reply chips ("Thanks!", "On my way!") appear directly in messaging notification cards based on conversation context.
+*   **Notification Smart Actions**: Contextual actions ("Open in Maps", "Add to Calendar") auto-generated from detected entities in notification text.
+*   **Live Caption**: Real-time on-device transcription of ANY audio playing on the device — videos, podcasts, calls. Floating caption bar. Settings → Accessibility → Live Caption.
+*   **Adaptive Sleep (Screen Attention)**: Front camera detects if the user is looking at the screen. Display timeout extends indefinitely while reading — no face data leaves the device.
+*   **Stylus Handwriting-to-Text**: Write with the Tab Pen Plus directly into ANY text field and the ML model converts ink strokes to typed text in real-time. Works in Chrome, Messages, search bars — everywhere.
+*   **Screenshot Intelligence**: On-device text extraction, QR decode, URL detection, and translation from screenshots. Powered by the APU.
+
+### 6. Connectivity & Power Optimization
+*   **Wireless Display (Miracast)**: Cast your screen to any Miracast receiver (smart TV, projector) via WiFi Direct. Settings → Connected devices → Cast.
+*   **Night Light**: Hardware-accelerated blue-light filter using the GPU color correction matrix. Scheduled or manual. Zero power cost.
+*   **USB-OTG Auto-Mount**: Notification when USB storage devices are connected via USB-C OTG. Tap to open file manager.
+*   **Adaptive Connectivity**: Framework intelligently manages WiFi/BT power states based on signal quality and usage patterns.
+*   **Idle Power Optimizer**: Background apps are automatically affinity-pinned to efficiency cores (Cortex-A510) when the screen is off.
+*   **Aggressive App Standby**: Apps unused for 3 days are moved to restricted standby bucket (limited background work). Default AOSP is 5 days.
+*   **ZRAM Writeback Tuning**: Optimized idle page writeback scheduling for the 8GB/12GB RAM configurations.
+*   **F2FS Storage Optimization**: Advanced garbage collection parameters enabled to prevent storage fragmentation stutters on the UFS 4.0 storage.
+
+### 7. Data Restore & Backup
+*   **Local & Cloud Restore (Seedvault)**: LineageOS's built-in Seedvault backup system is fully integrated. During the initial Setup Wizard, you can seamlessly restore apps and data from a USB-C flash drive or a Nextcloud server.
+*   **Google Data Transfer (Cable/Cloud)**: If you flash a GApps package (like MindTheGapps), Google's standard Setup Wizard is injected. This enables you to restore data directly from your old phone via a USB-C to USB-C cable or from your Google One cloud backup.
+
 ---
+
 
 ## Build Process
 
@@ -200,3 +226,9 @@ For full, high-fidelity system-level logging from a PC:
 ## License
 
 Apache-2.0. See file headers for details.
+
+---
+
+<div align="center">
+  <b>Built and maintained with ❤️ by MuktoX</b>
+</div>

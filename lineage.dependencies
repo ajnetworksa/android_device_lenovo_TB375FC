@@ -1,14 +1,17 @@
 [
   {
     "repository": "android_vendor_lenovo_TB375FC",
-    "target_path": "vendor/lenovo/TB375FC"
+    "target_path": "vendor/lenovo/TB375FC",
+    "remote": "github"
   },
   {
     "repository": "android_device_lenovo_TB375FC-kernel",
-    "target_path": "device/lenovo/TB375FC-kernel"
+    "target_path": "device/lenovo/TB375FC-kernel",
+    "remote": "github"
   },
   {
     "repository": "android_hardware_mediatek",
-    "target_path": "hardware/mediatek"
+    "target_path": "hardware/mediatek",
+    "remote": "github"
   }
 ]

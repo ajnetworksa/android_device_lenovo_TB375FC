@@ -9,7 +9,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # Goal: zero-jank 144 Hz output on every frame path — scroll, launch,
-# transition, drawing. Tuned specifically for the Mali-G615 MC10 GPU,
+# transition, drawing. Tuned specifically for the Immortalis-G615 MC6 GPU,
 # the MTK FPSGO governor, and the NT36532 touch panel (360 Hz sampling).
 #
 
@@ -61,18 +61,6 @@ PRODUCT_SYSTEM_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     ro.vendor.touchpanel.max_touch_major=15 \
     ro.vendor.touchpanel.report_rate=360
-
-# ── Memory — Low-Memory Killer ────────────────────────────────────────────────
-
-# LMKD swap parameters matched to stock A16 but with a slightly tighter
-# thrashing threshold to keep foreground animations stutter-free when RAM
-# pressure builds during multi-window use.
-PRODUCT_VENDOR_PROPERTIES += \
-    ro.lmk.swap_free_low_percentage=10 \
-    ro.lmk.thrashing_limit=100 \
-    ro.lmk.thrashing_limit_decay=10 \
-    ro.lmk.kill_timeout_ms=100 \
-    ro.lmk.psi_complete_stall_ms=500
 
 # ── HWUI Cache Tuning ─────────────────────────────────────────────────────────
 

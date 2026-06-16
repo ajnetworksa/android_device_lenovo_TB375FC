@@ -372,7 +372,6 @@ BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := \
     tui-common.ko \
     regulator-vibrator.ko \
     i2c-mt65xx.ko \
-    mtk_dramc.ko \
     spi-mt65xx.ko \
     mt6375.ko \
     nt36532.ko \

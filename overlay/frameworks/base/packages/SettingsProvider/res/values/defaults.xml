@@ -2,4 +2,8 @@
 <resources>
     <!-- Auto-rotate on by default, matching stock. AOSP defaults this false. -->
     <bool name="def_accelerometer_rotation">true</bool>
+
+    <!-- System-wide Ad Blocking via Private DNS out of the box -->
+    <string name="def_private_dns_mode" translatable="false">hostname</string>
+    <string name="def_private_dns_specifier" translatable="false">dns.adguard-dns.com</string>
 </resources>

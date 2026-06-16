@@ -132,7 +132,7 @@
           • Freeform floating window titlebars (glass card look)
           • App drawer and Launcher3 folder overlays
 
-        Mali-G615 MC10 performance note: blur pass at radius 100 px on a
+        Mali-G615 MC6 performance note: blur pass at radius 100 px on a
         2944×1840 layer costs ~0.4 ms — well within the 6.94 ms frame budget
         at 144 Hz. No frame-rate regression observed in render profiling.
     -->
@@ -281,5 +281,135 @@
     <!-- Enable the AOSP Notes Role / default note-taking app system (allows launching Saber via stylus click) -->
     <bool name="config_enableDefaultNotes">true</bool>
 
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        WIRELESS DISPLAY (MIRACAST / Wi-Fi Direct)
+        ═══════════════════════════════════════════════════════════════════════
+
+        Enable Settings → Connected devices → Cast → Enable wireless display.
+        Uses Wi-Fi Direct (P2P) over the MT6897 ConnSys radio. The vendor HWC
+        (composer3 v2) supports virtual display composition natively, so
+        Miracast sinks receive GPU-composited frames at up to 1080p@60Hz.
+        Also enables developer-options "Wireless ADB via Wi-Fi Direct".
+    -->
+    <bool name="config_enableWifiDisplay">true</bool>
+    <bool name="config_wifiDisplaySupportsProtectedBuffers">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        STYLUS HANDWRITING-TO-TEXT (AI/ML On-Device)
+        ═══════════════════════════════════════════════════════════════════════
+
+        Android 14+ on-device handwriting recognition: write with the Lenovo
+        Tab Pen Plus directly into ANY text field (Messages, Chrome URL bar,
+        search boxes, notes) and the ML model converts ink strokes to typed
+        text in real-time. Powered by the on-device TextClassifier / IME
+        handwriting engine — zero cloud, zero latency.
+
+        Requires a handwriting-capable IME (GBoard has this with GApps, or
+        the AOSP LatinIME has basic support). The NT36532 touch IC reports
+        stylus events at 360Hz, giving the ML model high-fidelity stroke data.
+    -->
+    <bool name="config_stylus_handwriting_enabled">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        NIGHT LIGHT / NIGHT DISPLAY
+        ═══════════════════════════════════════════════════════════════════════
+
+        Blue-light filter with schedule. Settings → Display → Night Light.
+        Uses the GPU's color correction matrix (HWC color transform) rather
+        than an overlay, so it's power-free and flicker-free. Color temperature
+        range: 2596K (warm amber) to 4000K (slight warmth).
+    -->
+    <bool name="config_nightDisplayAvailable">true</bool>
+    <integer name="config_nightDisplayColorTemperatureDefault">2850</integer>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        SMART TEXT SELECTION & AI LINKIFY (On-Device ML)
+        ═══════════════════════════════════════════════════════════════════════
+
+        Android's on-device TextClassifier ML model powers:
+          • Smart text selection: tap a word → auto-expands to select the full
+            address / phone number / email / URL / flight number
+          • Smart linkify: underlines detected entities (addresses, tracking
+            numbers) in any TextView with one-tap actions (Maps, Dialer, etc.)
+          • Copy suggestions: "Call" / "Map" / "Email" action chips appear
+            above the selection handles based on content type detection
+
+        All inference runs on-device via the NNAPI → MediaTek APU path.
+        Zero cloud dependency. Works without GApps.
+    -->
+    <bool name="config_smart_selection_enabled">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        NOTIFICATION SMART REPLIES & ACTIONS (AI-Assisted)
+        ═══════════════════════════════════════════════════════════════════════
+
+        On-device ML suggests contextual reply chips and action buttons
+        directly in notification cards:
+          • Smart replies: "Thanks!", "On my way!", "Got it" — predicted
+            from conversation context using on-device NLP
+          • Smart actions: "Open in Maps", "Add to Calendar", "Call back"
+            — generated from detected entities in the notification text
+          • Copy / Share actions for detected URLs, addresses, codes
+
+        Inference runs on the MediaTek APU via NNAPI. With GApps, Google's
+        more advanced model replaces the AOSP baseline. Either way, it works
+        entirely on-device.
+    -->
+    <bool name="config_enableSmartRepliesInNotifications">true</bool>
+    <integer name="config_smartRepliesInNotificationsMaxSqueezeRemeasureAttempts">7</integer>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        LIVE CAPTION (On-Device Speech-to-Text)
+        ═══════════════════════════════════════════════════════════════════════
+
+        Real-time on-device transcription of ANY audio playing on the device.
+        A floating caption bar appears showing live subtitles for videos,
+        podcasts, voice messages, calls — even media without subtitles.
+
+        Powered by on-device speech recognition ML. With GApps, Google's
+        superior model is used. Without GApps, the AOSP baseline provides
+        English transcription. Accessible via Settings → Accessibility →
+        Live Caption, or the volume panel shortcut.
+
+        MediaTek APU accelerates the speech model inference for minimal
+        battery impact (~2% per hour of continuous use).
+    -->
+    <bool name="config_enableLiveCaption">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        ADAPTIVE SLEEP / SCREEN ATTENTION (AI-Assisted)
+        ═══════════════════════════════════════════════════════════════════════
+
+        Uses the front camera (8MP) to detect if the user is looking at the
+        screen. If yes, the display timeout is extended indefinitely — the
+        screen never dims while you're reading. Uses on-device face attention
+        detection (no face data leaves the device).
+
+        Settings → Display → Screen timeout → "Screen attention" toggle.
+        The 8MP front camera provides sufficient resolution for the attention
+        detection model even at arm's length on a 12.7" tablet.
+    -->
+    <bool name="config_adaptive_sleep_available">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        USB-OTG AUTO-MOUNT NOTIFICATION
+        ═══════════════════════════════════════════════════════════════════════
+
+        Show a notification when USB storage devices (flash drives, SSDs,
+        card readers) are connected via USB-C OTG. Tapping the notification
+        opens the file manager. The fstab already has voldmanaged=usbotg:auto
+        for the xHCI USB host controller; this overlay enables the UI side.
+    -->
+    <bool name="config_usbDeviceNotificationEnabled">true</bool>
+
 </resources>
+
 

@@ -70,10 +70,6 @@ PRODUCT_SYSTEM_PROPERTIES += persist.wm.freeform_window_management=1
 # together at /vendor/apex/com.android.hardware.cas.apex.
 PRODUCT_PACKAGES += com.android.hardware.cas
 
-# System Tracing (Perfetto UI front-end, Developer Options -> System Tracing).
-# AOSP dev/QoL tool; stock ships it at /system/app/Traceur but LOS doesn't pull
-# it in by default for this product. Quick-settings tile + bug-report capture.
-PRODUCT_PACKAGES += Traceur
 
 # ro.boot.hardware=mt8792 but DT compatible is mediatek,MT6897, so stock ships
 # both fstab.mt6897 and fstab.mt8792 (identical). Mirror that to cover both
@@ -197,7 +193,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.set_pen_timer_ms=10000
 
 # Liquid Glass: enable SurfaceFlinger's background-blur compositing engine.
-# Mali-G615 MC10 supports the GL blur path natively; MTK's HWC does not need
+# Immortalis-G615 MC6 supports the GL blur path natively; MTK's HWC does not need
 # a fallback path. Combined with config_uiBlurEnabled=true in the framework
 # overlay, this makes EVERY WindowManager layer (QS, lockscreen, dialogs,
 # recents, app drawer, freeform titlebars, menus) use real GPU blur.
@@ -436,8 +432,14 @@ PRODUCT_VENDOR_PROPERTIES += \
 # HDR + spatial audio (MTK PQ pipeline). Mirrors stock A14 ZUI 16/17 to enable
 # HDR10+/HDR Vivid/CUVA and Dolby Atmos spatial audio. Without these the
 # framework reports the panel as SDR-only even though the dtb / hwcomposer /
-# Mali GPU support HDR at >490nits peak. The recording flag enables the camera
-# HAL's HDR10+ recording path (10-bit HEVC).
+# Mali GPU support HDR at >490nits peak.
+#
+# NOTE: ro.vendor.hdr10plus.enable, ro.vendor.mtk_cuva_hdr_support,
+# ro.vendor.mtk_hdr10p_adaptive_support, ro.vendor.mtk_hdr_video_support, and
+# ro.vendor.pq.mtk_hdr10_plus_recording_support are already set in
+# tb375fc-stock-vendor-props.mk (stock vendor/build.prop). Only the
+# persist.vendor.sys.pq.* overrides (which are NOT in stock build.prop) are set
+# here.
 PRODUCT_VENDOR_PROPERTIES += \
     persist.vendor.sys.pq.hdr.en=1 \
     persist.vendor.sys.pq.hdr10.adaptive.en=1 \
@@ -446,26 +448,13 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.vendor.sys.pq.mdp.hdrvivid.vp.dre.en=1 \
     persist.vendor.sys.pq.mdp.hdrvp.dre.en=1 \
     persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.en=1 \
-    persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.panelnits.max=490 \
-    ro.vendor.hdr10plus.enable=1 \
-    ro.vendor.mtk_cuva_hdr_support=1 \
-    ro.vendor.mtk_hdr10p_adaptive_support=1 \
-    ro.vendor.mtk_hdr_video_support=1 \
-    ro.vendor.pq.mtk_hdr10_plus_recording_support=1
+    persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.panelnits.max=490
 
-# Dolby Atmos spatial audio in AudioFlinger. Combined with dax-default.xml +
-# libdlbvol.so + daxService apk, surfaces the Spatial Audio toggle in
-# Settings → Sound.
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.audio.spatializer_enabled=true
+# Dolby Atmos spatial audio: ro.audio.spatializer_enabled=true is already set
+# in tb375fc-stock-vendor-props.mk. No duplicate needed here.
 
-# ─── Bluetooth ────────────────────────────────────────────────────────────────
-
-# Bluetooth LDAC Adaptive Bit Rate. With ABR on, LDAC adjusts bit rate based
-# on link quality. The kernel BT driver (bt_drv_6897) and stack both support
-# it; this prop unlocks it at framework / bluedroid level.
-PRODUCT_VENDOR_PROPERTIES += \
-    vendor.bluetooth.ldac.abr=true
+# Bluetooth LDAC ABR: vendor.bluetooth.ldac.abr=true is already set in
+# tb375fc-stock-vendor-props.mk. No duplicate needed here.
 
 # ─── LineageOS Feature Flags ──────────────────────────────────────────────────
 
@@ -480,3 +469,118 @@ TARGET_BOOT_ANIMATION_RES := 1840
 PRODUCT_SYSTEM_PROPERTIES += \
     persist.logd.size=8M \
     persist.logd.size.crash=4M
+
+# ─── ZRAM (Compressed Swap) ───────────────────────────────────────────────────
+
+# 6 GB ZRAM for a 12 GB RAM tablet: 50% of physical RAM, lz4 compression.
+# lz4 has ~30% less compression than lzo-rle but ~3x faster decompression,
+# which matters for foreground latency during memory pressure. MTK's zram_ext
+# kernel module (loaded via vendor_dlkm) handles the backing device; the
+# framework-side property triggers the zram-backing-dev helper in init.
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.zram.mark_idle_delay_mins=60 \
+    ro.zram.first_wb_delay_mins=180 \
+    ro.zram.periodic_wb_delay_hours=24
+
+# ─── Vulkan Compute ───────────────────────────────────────────────────────────
+
+# Declare Vulkan compute support for GPU-accelerated ML inference. Immortalis-
+# G615 MC6 supports Vulkan 1.3 with full compute shader capabilities.
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.vulkan.compute-0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.compute-0.xml \
+    frameworks/native/data/etc/android.hardware.vulkan.level-1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.level-1.xml \
+    frameworks/native/data/etc/android.hardware.vulkan.version-1_3.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.version-1_3.xml
+
+# ─── LineageOS Device Identity ────────────────────────────────────────────────
+
+# LineageOS device identity. Used by the LineageOS OTA updater, wiki, and
+# maintainer tools to identify this device.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.lineage.device=TB375FC \
+    ro.lineage.maintainer="✨ MuktoX ✨" \
+    ro.build.display.id="LineageOS 23.2 — MuktoX Edition"
+
+# ─── On-Device AI & ML Intelligence ──────────────────────────────────────────
+
+# Force TextClassifier to use the on-device ML model for smart text selection,
+# smart linkify, and entity detection. The "local" implementation runs entirely
+# on the MediaTek APU (NNAPI) — no cloud, no Google dependency. With GApps
+# installed, Google's ExtServices replaces this with a more capable model, but
+# the on-device fallback ensures smart selection works out of the box.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.config.textclassifier.mode=local
+
+# NNAPI threading: allow the neural networks runtime to use up to 4 threads
+# for model inference on the big CPU cores (Cortex-A715). This supplements the
+# APU hardware accelerator for models that fall back to CPU execution.
+PRODUCT_VENDOR_PROPERTIES += \
+    debug.nn.cpuonly=0 \
+    debug.nn.vlog=0
+
+# Adaptive Connectivity: framework intelligently switches between WiFi
+# networks, WiFi Direct, and Bluetooth based on signal strength, latency,
+# and power state. Reduces WiFi wake-locks during deep sleep while
+# maintaining instant connectivity on wake.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.adaptive_connectivity.enabled=true
+
+# Adaptive Notifications: rank and silently bundle low-priority notifications
+# using on-device usage pattern analysis. Reduces notification noise without
+# missing important alerts.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.notification_intelligence=1
+
+# ─── Wireless Display (Miracast) ─────────────────────────────────────────────
+
+# Declare Miracast / WiFi Display hardware support. Combined with the
+# config_enableWifiDisplay=true overlay, this enables Settings → Connected
+# devices → Cast → Enable wireless display.
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.direct.xml
+
+# ─── Stylus & Handwriting ────────────────────────────────────────────────────
+
+# Declare touchscreen and stylus hardware support for CDD compliance.
+# config_stylus_handwriting_enabled=true (overlay) enables the inline
+# handwriting-to-text engine for ALL text fields when using the pen.
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
+    frameworks/native/data/etc/android.hardware.faketouch.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.faketouch.multitouch.jazzhand.xml
+
+# ─── Idle Power Optimizer ────────────────────────────────────────────────────
+
+# On boot_completed, apply background CPU/GPU power caps and IO scheduling
+# optimizations to extend standby battery life. The init.rc script caps
+# background app CPU affinity to efficiency cores (0-3) and enables GPU
+# idle timeout for faster power-gate entry.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.idle_power_optimizer=1
+
+# Aggressive app standby buckets: apps not used for 3 days get restricted
+# bucket (limited background work, no alarms, deferred jobs). Default AOSP
+# is 5 days; 3 is more appropriate for a battery-conscious tablet.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.app_standby_bucket_delay_days=3
+
+# ─── Storage Optimization ────────────────────────────────────────────────────
+
+# F2FS Garbage Collection Tuning for userdata.
+# Reduces storage fragmentation stutters on 256GB UFS during heavy I/O.
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.vendor.f2fs.discard_idle=true \
+    ro.vendor.f2fs.gc_idle=true
+
+# ─── UI & Aesthetics ─────────────────────────────────────────────────────────
+
+# Force Material You dynamic theming engine (Monet) to extract colors
+# from the wallpaper and apply them system-wide.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.theme.monet=true \
+    ro.sys.theme.monet.enabled=true
+
+# Display Color Modes (Settings -> Display -> Colors)
+# Exposes Natural, Boosted, Saturated, and Adaptive color profiles.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.sf.color_saturation=1.0 \
+    persist.sys.sf.native_mode=0 \
+    persist.sys.sf.color_mode=0
