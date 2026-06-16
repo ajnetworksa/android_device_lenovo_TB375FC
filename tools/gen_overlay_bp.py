@@ -22,7 +22,13 @@ import os
 
 DEVICE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOS_ROOT = os.path.abspath(os.path.join(DEVICE_DIR, '..', '..', '..'))
-VENDOR_DIR = os.path.join(LOS_ROOT, 'vendor', 'lenovo', 'TB375FC')
+
+# Sibling dev repository fallback
+sibling_vendor = os.path.abspath(os.path.join(DEVICE_DIR, '..', 'android_vendor_lenovo_TB375FC'))
+if os.path.isdir(sibling_vendor):
+    VENDOR_DIR = sibling_vendor
+else:
+    VENDOR_DIR = os.path.join(LOS_ROOT, 'vendor', 'lenovo', 'TB375FC')
 PROP = os.path.join(VENDOR_DIR, 'proprietary')
 ANDROID_BP = os.path.join(VENDOR_DIR, 'Android.bp')
 OVERLAYS_MK = os.path.join(VENDOR_DIR, 'TB375FC-overlays.mk')

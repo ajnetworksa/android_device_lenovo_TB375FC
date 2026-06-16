@@ -24,7 +24,13 @@ import re
 
 DEVICE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOS_ROOT = os.path.abspath(os.path.join(DEVICE_DIR, '..', '..', '..'))
-VENDOR_DIR = os.path.join(LOS_ROOT, 'vendor', 'lenovo', 'tb375fc')
+
+# Sibling dev repository fallback
+sibling_vendor = os.path.abspath(os.path.join(DEVICE_DIR, '..', 'android_vendor_lenovo_TB375FC'))
+if os.path.isdir(sibling_vendor):
+    VENDOR_DIR = sibling_vendor
+else:
+    VENDOR_DIR = os.path.join(LOS_ROOT, 'vendor', 'lenovo', 'TB375FC')
 PROP_ROOT = os.path.join(VENDOR_DIR, 'proprietary')
 
 PARTITION_MAP = {
@@ -105,7 +111,7 @@ def walk_proprietary():
             full = os.path.join(root, f)
             if not os.path.isfile(full):
                 continue
-            rel = os.path.relpath(full, PROP_ROOT)
+            rel = os.path.relpath(full, PROP_ROOT).replace(os.sep, '/')
             yield full, rel
 
 
@@ -122,7 +128,7 @@ def classify():
     # Second pass: classify each file
     seen_names = set()
     for full, rel in walk_proprietary():
-        parts = rel.split(os.sep, 1)
+        parts = rel.split('/', 1)
         if len(parts) != 2:
             skipped.append(rel + ' (no partition prefix)')
             continue
@@ -213,7 +219,7 @@ PROP_FILES_HEADER = '''# Proprietary files for TB375FC
 
 
 def write_vendor_mk(copies):
-    mk_path = os.path.join(VENDOR_DIR, 'tb375fc-vendor.mk')
+    mk_path = os.path.join(VENDOR_DIR, 'TB375FC-vendor.mk')
     with open(mk_path, 'w') as f:
         f.write(VENDOR_MK_HEADER)
         f.write('PRODUCT_COPY_FILES += \\\n')
@@ -310,7 +316,7 @@ def need_packages_makefile(apks):
     """Add PRODUCT_PACKAGES entries so the build pulls in the APK modules."""
     if not apks:
         return
-    mk_path = os.path.join(VENDOR_DIR, 'tb375fc-vendor.mk')
+    mk_path = os.path.join(VENDOR_DIR, 'TB375FC-vendor.mk')
     lines = ['\nPRODUCT_PACKAGES += \\\n']
     names = sorted(name for _, _, _, name in apks)
     for i, n in enumerate(names):
