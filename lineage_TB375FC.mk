@@ -43,7 +43,7 @@ $(call inherit-product, vendor/lineage/config/common_full_tablet_wifionly.mk)
 PRODUCT_DEVICE := TB375FC
 PRODUCT_NAME := lineage_TB375FC
 PRODUCT_BRAND := Lenovo
-PRODUCT_MODEL := TB375FC
+PRODUCT_MODEL := Lenovo Xiaoxin Pad Pro 12.7
 
 # PRC SKU identity. The lgsi block MUST agree with PRODUCT_DEVICE (see the note
 # in device.mk) - these are the PRC-region counterparts of the ROW values in

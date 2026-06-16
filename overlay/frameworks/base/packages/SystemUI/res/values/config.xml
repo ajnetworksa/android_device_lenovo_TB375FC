@@ -32,4 +32,48 @@
         <item>battery</item>
         <item>custom(com.dolby.daxservice/.DaxTileService)</item>
     </string-array>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        LIQUID GLASS — Quick Settings & Notification Shade
+        ═══════════════════════════════════════════════════════════════════════
+
+        These radii are consumed by SystemUI's NotificationShadeWindowController
+        and QSFragmentUI to set background blur via Window.setBackgroundBlurRadius().
+        They work in conjunction with config_uiBlurEnabled=true in the framework
+        overlay and ro.surface_flinger.supports_background_blur=1 at the SF layer.
+
+        At 340 dpi on a 2944×1840 panel:
+          64 px QS blur  → convincing frosted depth, wallpaper softly visible
+          48 px shade     → lighter feel than full QS, distinguishes layers
+          80 px keyguard  → fully blurred, obscures notification content
+    -->
+    <integer name="config_qsBlurRadius">64</integer>
+    <integer name="config_notificationShadeBlurRadius">48</integer>
+    <integer name="config_keyguardBlurRadius">80</integer>
+
+    <!--
+        Tablet-optimised large-screen QS header: clock, date, and media player
+        shown in the expanded header without requiring a scroll to reach tiles.
+        Only activates on displays ≥600 dp wide (this panel is ~873 dp).
+    -->
+    <bool name="config_use_large_screen_shade_header">true</bool>
+    <bool name="config_useLargeScreenShadeHeader">true</bool>
+
+    <!--
+        ═══════════════════════════════════════════════════════════════════════
+        ADVANCED CLIPBOARD HISTORY PANEL
+        ═══════════════════════════════════════════════════════════════════════
+
+        LineageOS's SystemUI clipboard manager: floating history panel above
+        the keyboard showing the last N items. Tap any entry to paste.
+        Mirrors the Samsung Clipboard behaviour using AOSP clipboard APIs.
+    -->
+    <bool name="config_enableClipboardHistory">true</bool>
+    <integer name="config_clipboardHistoryMaxItems">20</integer>
+
+    <!-- Enable charging ripple animation on lockscreen (Pixel-style dynamic wave) -->
+    <bool name="config_chargingRippleEnabled">true</bool>
+
 </resources>
+

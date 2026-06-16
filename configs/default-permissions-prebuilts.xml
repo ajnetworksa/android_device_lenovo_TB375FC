@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<!--
+    TB375FC — Pre-granted System Permissions for Prebuilt Utilities
+    Targets: Saber, PocketPalAI, SD Maid SE, and WiFiAnalyzer.
+    
+    This ensures that when the user boots the ROM, these core tools run with 
+    their permissions pre-granted, making them feel like native integrated 
+    system features rather than separate user applications.
+-->
+<exceptions>
+    <!-- Saber Note App -->
+    <exception package="com.adilhanney.saber">
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+
+    <!-- PocketPal AI Local LLM Runner -->
+    <exception package="com.pocketpalai">
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+
+    <!-- SD Maid SE System Cleaner / Device Care -->
+    <exception package="eu.darken.sdmse">
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false"/>
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+
+    <!-- WiFiAnalyzer Intelligent Wifi / Connectivity Labs -->
+    <exception package="com.vrem.wifianalyzer">
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+
+    <!-- Brave Browser -->
+    <exception package="com.brave.browser">
+        <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false"/>
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+</exceptions>
+

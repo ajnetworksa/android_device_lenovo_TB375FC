@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: The LineageOS Project
+     SPDX-License-Identifier: Apache-2.0
+
+     TB375FC — Launcher3 / LineageLauncher Liquid Glass Overlay
+
+     Launcher3 reads config_uiBlurEnabled from the framework overlay and
+     applies blur to:
+       - App drawer background (frosted glass over wallpaper)
+       - Folder overlay backgrounds
+       - Widget picker background
+       - Overview / Recents blur-behind
+       - All-apps search bar background
+
+     These configs tune Launcher-specific glass parameters for the 12.7"
+     2944×1840 display.
+-->
+<resources>
+
+    <!--
+        App drawer blur radius (px). 56 px gives a clean frosted-glass
+        depth effect on the all-apps sheet without completely hiding the
+        wallpaper — the subtle colour beneath gives visual context.
+    -->
+    <integer name="config_allAppsBlurRadius">56</integer>
+
+    <!--
+        Folder background blur radius. Slightly less than app drawer so
+        the folder feels elevated but distinct.
+    -->
+    <integer name="config_folderBlurRadius">40</integer>
+
+    <!--
+        Widget picker blur. Full blur (72 px) appropriate here since the
+        picker is a large modal sheet that should feel opaque enough for
+        focused interaction.
+    -->
+    <integer name="config_widgetPickerBlurRadius">72</integer>
+
+    <!--
+        Allow the Launcher to display a translucent bottom hotseat tray.
+        Combined with config_uiBlurEnabled=true, the hotseat background
+        becomes a frosted glass pill — similar to iOS's dock look.
+    -->
+    <bool name="config_hasTranslucentTaskbar">true</bool>
+
+    <!--
+        Taskbar corner radius (dp) on this tablet. 26 dp matches the
+        freeform window corner radius (24 dp) for visual consistency
+        across all glass surfaces.
+    -->
+    <dimen name="taskbar_corners_radius">26dp</dimen>
+
+</resources>

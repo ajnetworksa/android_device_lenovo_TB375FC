@@ -54,7 +54,11 @@ $(call inherit-product, hardware/lineage/compat/frameworks/compat.mk)
 # advertise FEATURE_FREEFORM_WINDOW_MANAGEMENT, and by WindowManager to allow
 # freeform launch modes. Tablet form factor + this prop is what unlocks the
 # "windowed apps on home screen" UX you see in modern Android tablet builds.
-PRODUCT_PROPERTY_OVERRIDES += persist.wm.freeform_window_management=1
+#
+# persist.* framework props must land on /system/build.prop (read before
+# PackageManagerService starts); PRODUCT_PROPERTY_OVERRIDES routes to
+# /vendor/build.prop in AOSP A16, which is too late.
+PRODUCT_SYSTEM_PROPERTIES += persist.wm.freeform_window_management=1
 
 # Conditional Access System HAL (AIDL). Stock A16 PRC ships it. Used by digital-
 # broadcast and a few streaming apps to request content protection keys. Most
@@ -88,11 +92,40 @@ include $(DEVICE_PATH)/tb375fc-rootdir-packages.mk
 # MTK HAL knobs, Lenovo init triggers. Required for libGLES_mali eglInitialize.
 include $(DEVICE_PATH)/tb375fc-stock-vendor-props.mk
 
+# GApps (MindTheGapps): client ID, Setup Wizard fixes, Play Integrity props.
+# System/product/system_ext partitions use ext4 (see BoardConfig.mk) for
+# compatibility with the MindTheGapps recovery installer.
+include $(DEVICE_PATH)/tb375fc-gapps.mk
+
+# 144 Hz animation engine: HWUI, SurfaceFlinger frame-rate governance,
+# ART parallel dex2oat on the big cluster, NT36532 high-frequency touch.
+include $(DEVICE_PATH)/tb375fc-animations.mk
+
+
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/rootdir/etc/fstab.mt6897:$(TARGET_COPY_OUT_VENDOR_RAMDISK)/first_stage_ramdisk/fstab.mt6897 \
     $(DEVICE_PATH)/rootdir/etc/fstab.mt6897:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.mt6897 \
     $(DEVICE_PATH)/rootdir/etc/fstab.mt8792:$(TARGET_COPY_OUT_VENDOR_RAMDISK)/first_stage_ramdisk/fstab.mt8792 \
     $(DEVICE_PATH)/rootdir/etc/fstab.mt8792:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.mt8792
+
+# Game Manager Service feature declaration: Enables AOSP game modes and performance tuning APIs.
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.software.game_service.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/android.software.game_service.xml
+
+# Prebuilt apps default permission grants
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/configs/default-permissions-prebuilts.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/default-permissions/default-permissions-prebuilts.xml
+
+
+
+# MTK SurfaceFlinger extension HAL framework manifest fragment (vendor libpowerhal
+# calls AServiceManager_getService for IMtkSF_ext/default at init; without this
+# declaration in the framework manifest the lookup returns NULL and libpowerhal
+# crashes with SIGSEGV). Installed as a framework VINTF manifest fragment so
+# assemble_vintf merges it with the rest of the system manifest at build time.
+PRODUCT_COPY_FILES += \
+    $(DEVICE_PATH)/manifest/mtksf_ext-mtk-default.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/vintf/manifest/mtksf_ext-mtk-default.xml
+
 
 # Novatek NT36532 touch IC firmware. In recovery /vendor never mounts, so
 # the kernel firmware loader can't find these unless they're in vendor_ramdisk00
@@ -147,10 +180,11 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_LINKER_CONFIG_FRAGMENTS += \
     $(DEVICE_PATH)/configs/linker_config/vendor_require_apexsupport.json
 
-# HAL identities mirroring stock vendor build.prop.
-TARGET_USES_AOSP_FOR_AUDIO := false
-TARGET_USES_QCOM_BSP := false
+# ─── Display & GPU ────────────────────────────────────────────────────────────
 
+# HAL identities mirroring stock vendor build.prop. Gralloc, HWC, Mali, and
+# Beanpod TEE identifiers must match the AIDL interface name declared in
+# vendor/etc/vintf/manifest.xml or the HAL bind fails at boot.
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.egl=meow \
     ro.hardware.gralloc=common \
@@ -161,6 +195,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.wechat=beanpod \
     ro.vendor.mediatek.platform=MT6897 \
     ro.surface_flinger.set_pen_timer_ms=10000
+
+# Liquid Glass: enable SurfaceFlinger's background-blur compositing engine.
+# Mali-G615 MC10 supports the GL blur path natively; MTK's HWC does not need
+# a fallback path. Combined with config_uiBlurEnabled=true in the framework
+# overlay, this makes EVERY WindowManager layer (QS, lockscreen, dialogs,
+# recents, app drawer, freeform titlebars, menus) use real GPU blur.
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.surface_flinger.supports_background_blur=1
+
 
 # SurfaceFlinger refresh-rate switch timers, matching stock. Without these the
 # panel never leaves its peak rate when idle (config_defaultRefreshRate=144 ->
@@ -212,6 +255,35 @@ PRODUCT_SYSTEM_PROPERTIES += \
 PRODUCT_SYSTEM_PROPERTIES += \
     debug.hwui.use_hint_manager=true
 
+# ─── Smart Screenshot (AI-Assisted) ───────────────────────────────────────────
+
+# Enable AOSP's on-device screenshot intelligence layer: text selection,
+# QR code decode, URL detection, translation action, and scrolling screenshot
+# stitching. Powered by on-device ML — zero cloud calls, zero latency.
+# config_screenshotCropAndShareEnabled=true in the framework overlay surfaces
+# these actions in the screenshot preview tray.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.screenshot.intelligence.enabled=1 \
+    persist.sys.screenshot.scroll=1
+
+# ─── Clipboard Persistence ────────────────────────────────────────────────────
+
+# Disable AOSP's 60-minute auto-clear for clipboard, keeping history until deleted.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.device_config.system_clipboard.auto_clear_enabled=false \
+    persist.device_config.system_clipboard.auto_clear_timeout=0
+
+# ─── Edge Panel / Sidebar ─────────────────────────────────────────────────────
+
+# Activate LineageOS's built-in edge-swipe app-launcher sidebar. Combined with
+# config_hasEdgeSensors=true (framework overlay), swipe-in from the left or
+# right edge opens the app launcher panel. Users can configure the trigger
+# zone width in Settings → Buttons → Swipe from edge.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.sys.edge_panel.enabled=1
+
+
+
 # Lenovo Tab Pen Plus identity props. The Lenovo touchscreen-service AIDL HAL
 # reads these to recognise pen capabilities and wire up the pen event device.
 # VID 0x17EF = Lenovo, PID 0x617F = Tab Pen Plus (BT companion).
@@ -253,23 +325,8 @@ PRODUCT_VENDOR_PROPERTIES += \
 # lineage_TB375FC.mk. Setting them explicitly trips post_process_props
 # "duplicate sysprop assignment".
 
-# A/B + dynamic partitions
-AB_OTA_PARTITIONS += \
-    boot \
-    vendor_boot \
-    init_boot \
-    dtbo \
-    odm \
-    odm_dlkm \
-    product \
-    system \
-    system_dlkm \
-    system_ext \
-    vbmeta \
-    vbmeta_system \
-    vbmeta_vendor \
-    vendor \
-    vendor_dlkm
+# AB_OTA_PARTITIONS is declared in BoardConfig.mk (board-scope). Removed
+# duplicate here to avoid confusion; Make last-write wins but it's misleading.
 
 # Bluetooth / Wi-Fi (MediaTek connsys) firmware is shipped via the vendor blob
 # tree (extract-files.sh from /vendor/firmware).
@@ -279,20 +336,16 @@ AB_OTA_PARTITIONS += \
 
 # Camera: TB375FC has 13MP + 8MP camera (MTK camera HAL blobs in vendor tree).
 
-DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
+# ─── VINTF & Manifests ────────────────────────────────────────────────────────
 
-# Standard GNSS HAL declaration. The vendor manifest.xml is a PRODUCT_COPY of the stock
-# blob and declares only the MTK HALs (audio/bt/pq/...); the stock ROM declared
-# GPS: android.hardware.gnss/IGnss/default ships via the stock gnss-default.xml fragment
-# (now correctly shipped through proprietary-files.txt as a copy-rule, so no separate
-# fragment is needed). The earlier tb375fc-gnss.xml workaround was removed - it duplicated
-# the GNSS HAL declaration and broke check_vintf.
+# DEVICE_MANIFEST_FILE is declared in BoardConfig.mk (board-scope).
+# GNSS: tb375fc-gnss.xml removed (was duplicating the vendor's gnss-default.xml
+# fragment shipped via the blob tree — would fail check_vintf with a duplicate
+# HAL declaration). The mtksf_ext-mtk-default.xml framework fragment is
+# installed via PRODUCT_COPY_FILES above.
 
-# Recovery / fastbootd / sideload packages. Without fastbootd,
-# `fastboot reboot fastboot`
-# lands in a recovery that can't enter userspace fastboot mode. Without
-# update_engine_sideload, LOS Recovery's "Apply update from ADB" can't consume
-# the OTA payload. bootctrl + boot HAL are needed for slot switching from recovery.
+# ─── Recovery & Update Engine ─────────────────────────────────────────────────
+
 PRODUCT_PACKAGES += \
     fastbootd \
     update_engine \
@@ -312,14 +365,34 @@ PRODUCT_PACKAGES += \
     fs_config_dirs \
     fs_config_files
 
-# Tap-to-wake bridge: Settings.Secure.DOUBLE_TAP_TO_WAKE -> /proc/gesture_control.
-# mtkpower ignores Mode.DOUBLE_TAP_TO_WAKE AIDL, so we bridge it ourselves.
-PRODUCT_PACKAGES += \
-    TapToWakeService
+# ─── System Packages ──────────────────────────────────────────────────────────
 
-# RRO turning on config_supportDoubleTapWake so AOSP Settings -> Display
-# surfaces the toggle.
+# Tap-to-wake bridge: Settings.Secure.DOUBLE_TAP_TO_WAKE → /proc/gesture_control.
+# mtkpower ignores Mode.DOUBLE_TAP_TO_WAKE AIDL, so we bridge it ourselves.
+PRODUCT_PACKAGES += TapToWakeService
+
+# System Tracing (Perfetto UI front-end, Developer Options → System Tracing).
+PRODUCT_PACKAGES += Traceur
+
+# GameSpace: Open-source gaming dashboard & performance manager.
+PRODUCT_PACKAGES += GameSpace
+
+# Prebuilt open-source system apps (Notes, AI LLM, Device Care, Wi-Fi Analyzer, Browser)
+PRODUCT_PACKAGES += \
+    Saber \
+    PocketPalAI \
+    SDMaidSE \
+    WiFiAnalyzer \
+    Brave
+
+
+
+# ─── Overlays ─────────────────────────────────────────────────────────────────
+
+# RRO: surfaces config_supportDoubleTapWake toggle, Liquid Glass blur engine,
+# advanced clipboard, edge panel, smart screenshot, and tablet taskbar configs.
 DEVICE_PACKAGE_OVERLAYS += device/lenovo/TB375FC/overlay
+
 
 # Locale-to-timezone first-boot mapping (Setup Wizard picks region -> we set TZ).
 PRODUCT_COPY_FILES += \
@@ -336,42 +409,22 @@ PRODUCT_PACKAGES += \
     android.hardware.audio.core-V3-ndk \
     android.hardware.audio.core.sounddose-V3-ndk
 
-# FM Radio support removed: device has no 3.5mm jack (needed for the standard
-# headphone-wire antenna) and no internal FM antenna trace on the PCB, so the
-# chip detects no stations on any frequency. The kernel module
-# (fmradio_drv_connac2x) is also stripped (see tb375fc-kernel-modules.mk).
+# ─── Connectivity ─────────────────────────────────────────────────────────────
 
-# WiFi: AOSP wpa_supplicant. Soong builds it out of external/wpa_supplicant_8
-# with nl80211 driver support once BOARD_WPA_SUPPLICANT_DRIVER=NL80211 is set;
-# this entry triggers install to /vendor/bin/hw/wpa_supplicant. The
-# /vendor/etc/init/android.hardware.wifi.supplicant-service.rc ships via vendor
-# blobs and points to this path.
+# WiFi: AOSP wpa_supplicant (nl80211 backend). The vendor Wi-Fi HAL runs via
+# AIDL through vendor.mediatek.hardware.wifi-service-lazy; wpa_supplicant
+# handles the supplicant side only.
 #
-# Known limitation: AOSP wpa_supplicant fails SAE/WPA3-transition association
-# on this device's MT6897 firmware with status_code=16. WiFi can scan and see
-# networks but won't connect to APs advertising SAE alongside PSK (most modern
-# routers + iOS 16+ hotspots). The real fix needs either a custom kernel with
-# a WLAN driver that doesn't depend on MTK vendor netlink commands, or
-# rebuilding wpa_supplicant_8 with CONFIG_* flags matching MTK driver
-# expectations.
+# Known: SAE/WPA3-transition association fails on MT6897 firmware (status 16).
+# The real fix needs a custom kernel with matching wpa_supplicant CONFIG flags.
 PRODUCT_PACKAGES += \
     wpa_supplicant \
     hostapd
 
-# WiFi-only telephony cleanup. Telephony APKs absent via three paths:
-#   - lineage_TB375FC.mk inherits full_base.mk (was full_base_telephony.mk),
-#     dropping Dialer/TeleService/TelephonyProvider/Telecom/MmsService/
-#     SimAppDialog/CarrierDefaultApp/ImsServiceEntitlement.
-#   - tb375fc-vendor.mk PRODUCT_PACKAGES line for CarrierConfig commented out.
-#   - ImsService was never in PRODUCT_PACKAGES, just had an Android.bp entry.
+# Bluetooth / Wi-Fi (MediaTek connsys) firmware ships via vendor blob tree.
+# FM Radio: removed — no 3.5mm jack and no internal FM antenna trace on PCB.
 
-# Display orientation: keep stock ORIENTATION_270. The Novatek NT36532 kernel
-# driver applies an internal rotation transform based on the DT-configured
-# panel mount orientation (270 deg), which only aligns with the display when
-# SurfaceFlinger primary_display_orientation matches stock. Changing SF
-# without retuning the kernel touch driver leaves InputReader delivering tap
-# coordinates rotated 270 deg relative to the rendered UI. Default is portrait;
-# rotate the tablet 90 deg for landscape.
+# ─── Platform Identity ────────────────────────────────────────────────────────
 
 # Disable magt (MediaTek thermal helper). Service is gated by
 # ro.vendor.magt.mtk_magt_support which stock vendor build.prop sets to 1, and
@@ -402,9 +455,11 @@ PRODUCT_VENDOR_PROPERTIES += \
 
 # Dolby Atmos spatial audio in AudioFlinger. Combined with dax-default.xml +
 # libdlbvol.so + daxService apk, surfaces the Spatial Audio toggle in
-# Settings -> Sound.
+# Settings → Sound.
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.audio.spatializer_enabled=true
+
+# ─── Bluetooth ────────────────────────────────────────────────────────────────
 
 # Bluetooth LDAC Adaptive Bit Rate. With ABR on, LDAC adjusts bit rate based
 # on link quality. The kernel BT driver (bt_drv_6897) and stack both support
@@ -412,5 +467,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_VENDOR_PROPERTIES += \
     vendor.bluetooth.ldac.abr=true
 
-# LineageOS feature toggles
+# ─── LineageOS Feature Flags ──────────────────────────────────────────────────
+
+# Boot animation resolution: match the 1840 px (short axis) native resolution
+# so the boot animation renders full-panel without upscale interpolation.
 TARGET_BOOT_ANIMATION_RES := 1840
+
+# ─── System-wide Debugging & Log Buffers ──────────────────────────────────────
+
+# Increase logcat ring buffer sizes (from default 256K to 8M) to prevent logs
+# from overflowing and wrapping around during boot sequences. Vital for bootloop debugging.
+PRODUCT_SYSTEM_PROPERTIES += \
+    persist.logd.size=8M \
+    persist.logd.size.crash=4M

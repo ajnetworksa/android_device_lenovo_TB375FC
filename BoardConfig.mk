@@ -77,7 +77,8 @@ BOARD_MKBOOTIMG_ARGS := --header_version $(BOARD_BOOT_HEADER_VERSION) \
 # v0 which the bootloader rejects on a v4 GKI device. Stock init_boot.img is v4.
 BOARD_MKBOOTIMG_INIT_ARGS := --header_version $(BOARD_INIT_BOOT_HEADER_VERSION)
 
-BOARD_KERNEL_SEPARATED_DTBO   := true
+# GKI-compliant kernel image: vendor_boot ramdisk carries modules, no
+# in-kernel dtbo build needed (prebuilt DTBO at BOARD_PREBUILT_DTBOIMAGE).
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 
 # Image build switches mirroring the stock TB375FC pattern. Declarative,
@@ -121,8 +122,6 @@ BOARD_ROOT_EXTRA_FOLDERS := metadata vendor acct
 # (empty), times out after ~15s, then userspace ueventd-firmware-loader
 # picks it up via /vendor/firmware.
 BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2 firmware_class.path=/vendor/firmware
-BOARD_BOOTCONFIG :=
-
 TARGET_KERNEL_CONFIG    :=
 TARGET_KERNEL_SOURCE    :=
 TARGET_PREBUILT_KERNEL  := $(DEVICE_PATH)/prebuilts/Image.gz
@@ -188,21 +187,35 @@ BOARD_SUPER_PARTITION_GROUPS := main
 BOARD_MAIN_SIZE              := 4827643904
 BOARD_MAIN_PARTITION_LIST    := system system_ext system_dlkm vendor vendor_dlkm product odm odm_dlkm
 
-# Canonical AOSP variable name is *_FILE_SYSTEM_TYPE, not *_PARTITION_TYPE.
-# Setting it flips BUILDING_VENDOR_IMAGE / BUILDING_*_DLKM_IMAGE to true in
-# soong vars; otherwise no .img build rules get emitted.
-BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE     := erofs
-BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE     := erofs
-BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE    := erofs
-BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := erofs
-BOARD_ODMIMAGE_FILE_SYSTEM_TYPE        := erofs
+# Filesystem types. Setting *_FILE_SYSTEM_TYPE flips BUILDING_*_IMAGE in
+# Soong; without it no .img build rules are emitted.
+#
+# Mixed strategy:
+#   system / product / system_ext → ext4
+#     MindTheGapps recovery installer appends APKs to these partitions at
+#     flash time. EROFS is a read-only compressed format — the installer
+#     cannot write to it, so GApps flashing silently fails. ext4 is r/w
+#     and the standard GApps target format.
+#   vendor / odm / *_dlkm → erofs
+#     GApps never touches vendor or kernel-module partitions. EROFS gives
+#     ~15–20% better density over ext4 for the 2 GB vendor blob tree, and
+#     MTK's EROFS driver is production-hardened on this SoC.
+BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE      := ext4
+BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE     := ext4
+BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE  := ext4
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE      := erofs
+BOARD_ODMIMAGE_FILE_SYSTEM_TYPE         := erofs
 BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
 BOARD_ODM_DLKMIMAGE_FILE_SYSTEM_TYPE    := erofs
 BOARD_SYSTEM_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
 
-TARGET_USERIMAGES_USE_F2FS := true
-TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS  := true
+TARGET_USERIMAGES_USE_EXT4  := true
 TARGET_USERIMAGES_USE_EROFS := true
+
+# GApps installer arch selector. MindTheGapps uses this to pull the arm64
+# package from its ZIP archive. Must match TARGET_ARCH (arm64).
+TARGET_GAPPS_ARCH := arm64
 
 # Per-partition flags
 BOARD_USES_SYSTEM_OTHER_ODEX := false
@@ -379,5 +392,4 @@ WPA_SUPPLICANT_VERSION      := VER_0_8_X
 # libwifi-hal-fallback (no-op), harmless because the AIDL service handles
 # all real work.
 
-# Inherit shared MTK + Lenovo common config when those land.
-# include device/lenovo/common/BoardConfigCommon.mk
+# (device/lenovo/common/BoardConfigCommon.mk does not exist yet.)
