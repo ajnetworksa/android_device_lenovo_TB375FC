@@ -584,3 +584,29 @@ PRODUCT_SYSTEM_PROPERTIES += \
     persist.sys.sf.color_saturation=1.0 \
     persist.sys.sf.native_mode=0 \
     persist.sys.sf.color_mode=0
+
+# ─── Dalvik VM Memory & Compiler Tuning ──────────────────────────────────────
+
+# Set generous heap sizes for the 8GB/12GB RAM and 3K high-resolution display
+# to prevent garbage collection stutter and OutOfMemory errors in heavy apps.
+PRODUCT_SYSTEM_PROPERTIES += \
+    dalvik.vm.heapstartsize=16m \
+    dalvik.vm.heapgrowthlimit=384m \
+    dalvik.vm.heapsize=768m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=8m \
+    dalvik.vm.heapmaxfree=80m
+
+# Speed up background and first-boot app compilation using the big Cortex-A715 cores
+PRODUCT_SYSTEM_PROPERTIES += \
+    dalvik.vm.boot-dex2oat-threads=8 \
+    dalvik.vm.dex2oat-threads=4 \
+    dalvik.vm.image-dex2oat-threads=8
+
+# ─── Bluetooth Audio Offloading ──────────────────────────────────────────────
+
+# Force offload high-fidelity Bluetooth codecs (LDAC, AptX HD) to MediaTek co-processor
+PRODUCT_VENDOR_PROPERTIES += \
+    persist.bluetooth.a2dp_offload.disabled=false \
+    persist.bluetooth.a2dp_offload.cap=sbc-aac-aptx-aptxhd-ldac
+
