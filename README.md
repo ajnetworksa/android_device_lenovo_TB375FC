@@ -104,7 +104,7 @@ Add the following local manifest configuration to `.repo/local_manifests/TB375FC
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <project name="LosSantosPro/android_device_lenovo_TB375FC" path="device/lenovo/TB375FC" remote="github" revision="lineage-23.2" />
+  <project name="ajnetworksa/android_device_lenovo_TB375FC" path="device/lenovo/TB375FC" remote="github" revision="lineage-23.2" />
   <project name="LosSantosPro/android_vendor_lenovo_TB375FC" path="vendor/lenovo/TB375FC" remote="github" revision="lineage-23.2" />
   <project name="LineageOS/android_hardware_mediatek" path="hardware/mediatek" remote="github" revision="lineage-23.2" />
   <!-- Open-source Gaming Dashboard -->
