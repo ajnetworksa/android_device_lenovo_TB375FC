@@ -174,7 +174,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.set_refresh_timer_ms=200 \
     ro.surface_flinger.display_update_imminent_timeout_ms=1000 \
     debug.sf.treat_170m_as_sRGB=1 \
-    debug.sf.predict_hwc_composition_strategy=0
+    debug.sf.predict_hwc_composition_strategy=0 \
+    debug.sf.disable_backpressure=1 \
+    debug.sf.latch_unsignaled=1 \
+    ro.surface_flinger.enable_frame_rate_override=true \
+    ro.surface_flinger.use_content_detection_for_refresh_rate=true
+
 
 # In AOSP A16, PRODUCT_PROPERTY_OVERRIDES and PRODUCT_VENDOR_PROPERTIES are
 # routed to /vendor/build.prop only. /system/build.prop comes from Soong's

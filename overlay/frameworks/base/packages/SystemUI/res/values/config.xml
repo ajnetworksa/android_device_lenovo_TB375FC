@@ -32,4 +32,8 @@
         <item>battery</item>
         <item>custom(com.dolby.daxservice/.DaxTileService)</item>
     </string-array>
+
+    <!-- Whether to use split notification shade (separate notification shade and quick settings) -->
+    <bool name="config_use_split_notification_shade">true</bool>
 </resources>
+
