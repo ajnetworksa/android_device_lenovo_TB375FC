@@ -18,7 +18,8 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota/compression.mk)
 # Sounds
 $(call inherit-product-if-exists, frameworks/base/data/sounds/AllAudio.mk)
 
-# Project Infinity-X common add-ons
+# Project Infinity-X common add-ons (Vanilla build)
+WITH_GAPPS := false
 $(call inherit-product, vendor/infinity/config/common.mk)
 
 # Device-specific
@@ -51,3 +52,7 @@ PRODUCT_GMS_CLIENTID_BASE := android-lenovo-rev2
 
 # Maintainer
 INFINITY_MAINTAINER := MuktoX
+
+# EdgeLink One UI PC-Style Desktop Window Manager & Sidebar
+PRODUCT_PACKAGES += \
+    EdgeLink
