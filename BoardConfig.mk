@@ -379,5 +379,8 @@ WPA_SUPPLICANT_VERSION      := VER_0_8_X
 # libwifi-hal-fallback (no-op), harmless because the AIDL service handles
 # all real work.
 
+# Face Unlock
+TARGET_FACE_UNLOCK_SUPPORTED := true
+
 # Inherit shared MTK + Lenovo common config when those land.
 # include device/lenovo/common/BoardConfigCommon.mk

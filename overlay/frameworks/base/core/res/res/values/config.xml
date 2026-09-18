@@ -73,10 +73,10 @@
         <item>210</item> <item>269</item> <item>270</item> <item>339</item>
         <item>340</item> <item>399</item> <item>400</item>
     </integer-array>
-    <item name="config_screenBrightnessSettingMinimumFloat" type="dimen" format="float">0.004173</item>
+    <item name="config_screenBrightnessSettingMinimumFloat" type="dimen" format="float">0.019608</item>
     <item name="config_screenBrightnessSettingMaximumFloat" type="dimen" format="float">1.0</item>
     <item name="config_screenBrightnessSettingDefaultFloat" type="dimen" format="float">0.470588</item>
-    <integer name="config_screenBrightnessSettingMinimum">3</integer>
+    <integer name="config_screenBrightnessSettingMinimum">5</integer>
 
     <!--
         Display capability flags + legacy resources from LgsiFrameworksOverlay.
@@ -114,4 +114,9 @@
     <bool name="config_isDesktopModeSupported">true</bool>
     <bool name="config_canInternalDisplayHostDesktops">true</bool>
     <bool name="config_isDesktopModeDevOptionSupported">true</bool>
+
+    <!-- Face Unlock / Face Auth configurations -->
+    <!-- Authenticator strength: 0: none, 15: strong, 255: weak (convenience software face auth) -->
+    <integer name="config_face_auth_authenticator_strength">255</integer>
+    <bool name="config_faceAuthSupportsSelfIllumination">false</bool>
 </resources>

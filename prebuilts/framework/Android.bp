@@ -38,4 +38,5 @@ dex_import {
     owner: "lenovo",
     jars: ["mediatek-common.jar"],
     prefer: true,
+    system_ext_specific: true,
 }

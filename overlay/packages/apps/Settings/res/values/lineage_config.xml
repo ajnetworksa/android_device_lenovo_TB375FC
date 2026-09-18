@@ -19,4 +19,10 @@
     <bool name="config_show_peak_refresh_rate_switch">false</bool>
     <bool name="config_show_min_refresh_rate_switch">false</bool>
     <bool name="config_show_smooth_display">false</bool>
+
+    <!-- Face Unlock enrollment activity -->
+    <string name="config_face_enroll" translatable="false">co.aospa.sense/co.aospa.sense.activities.EnrollActivity</string>
+    <bool name="config_face_education_use_lottie">true</bool>
+    <bool name="config_face_intro_show_less_secure">true</bool>
+    <bool name="config_face_intro_show_require_eyes">false</bool>
 </resources>
