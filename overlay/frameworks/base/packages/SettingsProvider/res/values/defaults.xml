@@ -2,4 +2,9 @@
 <resources>
     <!-- Auto-rotate on by default, matching stock. AOSP defaults this false. -->
     <bool name="def_accelerometer_rotation">true</bool>
+
+    <!-- Seedvault offline backup transport -->
+    <bool name="def_backup_enabled">true</bool>
+    <string name="def_backup_transport" translatable="false">com.stevesoltys.seedvault/.transport.ConfigurableBackupTransportService</string>
 </resources>
+

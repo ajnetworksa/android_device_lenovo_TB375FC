@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+    One UI Frosted Glass styling for volume dialog ringer drawer.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="@dimen/volume_dialog_background_corner_radius"/>
+    <solid android:color="#E61C1D22" />
+    <stroke android:width="1dp" android:color="#33FFFFFF" />
+</shape>

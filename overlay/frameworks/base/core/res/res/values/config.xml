@@ -119,4 +119,8 @@
     <!-- Authenticator strength: 0: none, 15: strong, 255: weak (convenience software face auth) -->
     <integer name="config_face_auth_authenticator_strength">255</integer>
     <bool name="config_faceAuthSupportsSelfIllumination">false</bool>
+
+    <!-- Samsung Squircle adaptive icon mask (One UI style) -->
+    <string name="config_icon_mask" translatable="false">"M50,0 C10,0 0,10 0,50 0,90 10,100 50,100 90,100 100,90 100,50 100,10 90,0 50,0 Z"</string>
+    <bool name="config_useRoundIcon">false</bool>
 </resources>

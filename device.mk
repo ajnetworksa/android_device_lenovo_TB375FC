@@ -168,7 +168,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # a scroll. AOSP defaults predict_hwc_composition_strategy on, but stock disables
 # it (the prediction misbehaves on this MTK HWC), so match stock.
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.surface_flinger.set_idle_timer_ms=2000 \
+    ro.surface_flinger.set_idle_timer_ms=10000 \
     ro.surface_flinger.set_touch_timer_ms=2000 \
     ro.surface_flinger.set_launcher_timer_ms=30000 \
     ro.surface_flinger.set_refresh_timer_ms=200 \
@@ -426,3 +426,27 @@ PRODUCT_SYSTEM_EXT_PROPERTIES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.biometrics.face.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/android.hardware.biometrics.face.xml
 endif
+
+# Offline Backup (Seedvault)
+PRODUCT_PACKAGES += \
+    Seedvault \
+    LocalContactsBackup \
+    com.stevesoltys.backup_allowlist \
+    com.stevesoltys.backup_default-permissions \
+    com.stevesoltys.backup_privapp_allowlist
+
+# One UI Flavour Packages (Native zero-root integration)
+PRODUCT_PACKAGES += \
+    FontOneUISansOverlay \
+    FontSamsungOneOverlay \
+    ClockFontSamsungOneOverlay \
+    NavbarOneUiOverlay \
+    NavbarSammyOverlay \
+    IconShapeSquircleOverlay \
+    IconPackSamAndroidOverlay \
+    IconPackSamLauncherOverlay \
+    IconPackSamSettingsOverlay \
+    IconPackSamSystemUIOverlay \
+    IconPackSamThemePickerOverlay
+
+
