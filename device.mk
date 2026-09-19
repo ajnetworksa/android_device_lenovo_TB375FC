@@ -175,9 +175,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.surface_flinger.display_update_imminent_timeout_ms=1000 \
     debug.sf.treat_170m_as_sRGB=1 \
     debug.sf.predict_hwc_composition_strategy=0 \
-    debug.sf.disable_backpressure=1 \
     debug.sf.latch_unsignaled=1 \
-    ro.surface_flinger.enable_frame_rate_override=true \
     ro.surface_flinger.use_content_detection_for_refresh_rate=true
 
 
@@ -398,24 +396,7 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.vendor.sys.pq.mdp.hdrvivid.vp.dre.en=1 \
     persist.vendor.sys.pq.mdp.hdrvp.dre.en=1 \
     persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.en=1 \
-    persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.panelnits.max=490 \
-    ro.vendor.hdr10plus.enable=1 \
-    ro.vendor.mtk_cuva_hdr_support=1 \
-    ro.vendor.mtk_hdr10p_adaptive_support=1 \
-    ro.vendor.mtk_hdr_video_support=1 \
-    ro.vendor.pq.mtk_hdr10_plus_recording_support=1
-
-# Dolby Atmos spatial audio in AudioFlinger. Combined with dax-default.xml +
-# libdlbvol.so + daxService apk, surfaces the Spatial Audio toggle in
-# Settings -> Sound.
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.audio.spatializer_enabled=true
-
-# Bluetooth LDAC Adaptive Bit Rate. With ABR on, LDAC adjusts bit rate based
-# on link quality. The kernel BT driver (bt_drv_6897) and stack both support
-# it; this prop unlocks it at framework / bluedroid level.
-PRODUCT_VENDOR_PROPERTIES += \
-    vendor.bluetooth.ldac.abr=true
+    persist.vendor.sys.pq.mdp.vp.hdr10.panel.dtmo.panelnits.max=490
 
 # LineageOS feature toggles
 TARGET_BOOT_ANIMATION_RES := 1840
